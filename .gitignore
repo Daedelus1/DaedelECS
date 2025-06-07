@@ -1,2 +1,5 @@
 */target
-*/cargo.lock
+/.idea
+/target
+*/Cargo.lock
+Cargo.lock

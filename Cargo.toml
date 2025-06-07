@@ -1,0 +1,9 @@
+[package]
+name = "daedelecs"
+version = "0.1.0"
+edition = "2024"
+
+
+[dependencies]
+daedelecs-core = { path = "daedelecs-core" }
+daedelecs-generators = {path = "daedelecs-generators"}

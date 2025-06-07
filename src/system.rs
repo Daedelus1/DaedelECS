@@ -25,6 +25,5 @@ pub trait SystemData {
 }
 
 
-// TODO: INCREASE THIS VALUE TO 128 FOR RELEASE
-generate_component_tuple_impls!(64);
+generate_component_tuple_impls!(128);
 

@@ -6,15 +6,14 @@ use std::collections::{HashMap, HashSet};
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 
-#[allow(dead_code)]
 pub struct World<S> {
     pub(crate) entities: Vec<Rc<RefCell<Entity>>>,
     pub(crate) systems_to_required_types_registry: HashMap<TypeId, HashSet<TypeId>>,
     pub(crate) system_to_entities_registry: HashMap<TypeId, Vec<Rc<RefCell<Entity>>>>,
     pub state: S,
 }
-#[allow(dead_code)]
 impl<State> World<State> {
+    /// Creates a new world, with an empty registry and no entities.
     pub fn new(state: State) -> Self {
         World {
             entities: Default::default(),
@@ -23,14 +22,20 @@ impl<State> World<State> {
             state,
         }
     }
-    pub(crate) fn register_system<S: System<State> + 'static>(&mut self) {
-        self.systems_to_required_types_registry.insert(
+    /// Registers the System as a possible system for an entity to have.
+    /// Call this method once ideally as soon as the world is initialized.
+    /// Will have no effect if called multiple times with the same system.  
+    /// Will not panic. 
+    pub fn register_system<S: System<State> + 'static>(&mut self) {
+        if let Some (_) = self.systems_to_required_types_registry.insert(
             TypeId::of::<S>(),
             S::get_required_types()
                 .iter()
                 .map(|t| *t)
                 .collect::<HashSet<TypeId>>(),
-        );
+        ) {
+            return;
+        }
         if self.entities.is_empty() {
             return;
         }
@@ -43,6 +48,20 @@ impl<State> World<State> {
             });
         self.system_to_entities_registry
             .insert(TypeId::of::<S>(), set);
+    }
+    /// Runs the indicated system over all entities with the requisite components.
+    /// Will not panic unless the user-defined systems can panic.
+    pub fn run_system<S: System<State> + 'static>(&mut self) {
+        if let Some(entities) = self.system_to_entities_registry.get(&TypeId::of::<S>()) {
+            let mut cloned_entities = Vec::with_capacity(entities.len());
+            entities.clone_into(&mut cloned_entities);
+            cloned_entities
+                .iter()
+                .for_each(|entity| S::run(entity.borrow_mut().deref_mut(), self))
+        } else {
+            self.register_system::<S>();
+            self.run_system::<S>();
+        }
     }
     pub(crate) fn add_entity(&mut self, entity: Entity) {
         let entity_rc = Rc::new(RefCell::new(entity));
@@ -61,17 +80,5 @@ impl<State> World<State> {
                     .push(entity_rc.clone());
             });
         self.entities.push(entity_rc);
-    }
-    pub fn run_system<S: System<State> + 'static>(&mut self) {
-        if let Some(entities) = self.system_to_entities_registry.get(&TypeId::of::<S>()) {
-            let mut cloned_entities = Vec::with_capacity(entities.len());
-            entities.clone_into(&mut cloned_entities);
-            cloned_entities
-                .iter()
-                .for_each(|entity| S::run(entity.borrow_mut().deref_mut(), self))
-        } else {
-            self.register_system::<S>();
-            self.run_system::<S>();
-        }
     }
 }

@@ -15,7 +15,7 @@ pub fn component(input: TokenStream) -> TokenStream {
     let generated: TokenStream = quote! {
         impl Component for #name {}
     }
-    .into();
+        .into();
 
     // Return the generated impl
     generated.into()

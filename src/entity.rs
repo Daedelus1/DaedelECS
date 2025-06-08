@@ -6,13 +6,15 @@ use std::collections::HashMap;
 use std::ops::Deref;
 use std::rc::Rc;
 
-#[allow(dead_code)]
-pub(crate) struct Entity {
+pub struct Entity {
     pub(crate) components: HashMap<TypeId, Rc<RefCell<dyn Component>>>,
 }
 
 impl Entity {
-    #[allow(dead_code)]
+    /// Attempts to get a reference to a component of a specified type from an entity.
+    /// Will Return `None` if no such component is associated with the entity.
+    /// Will Return `Some(&Entity)` if it does exist.
+    /// Will never panic.
     pub fn get_component<C: Component>(&self) -> Option<Ref<C>> {
         if let Some(component_reference) = self.components.get(&TypeId::of::<C>()) {
             let borrowed = component_reference.borrow();
@@ -30,6 +32,10 @@ impl Entity {
             None
         }
     }
+    /// Attempts to get a mutable reference to a component of a specified type from an entity.
+    /// Will Return `None` if no such component is associated with the entity.
+    /// Will Return `Some(&mut Entity)` if it does exist.
+    /// Will never panic.
     pub fn get_mut_component<C: Component>(&mut self) -> Option<RefMut<C>> {
         if let Some(component_reference) = self.components.get_mut(&TypeId::of::<C>()) {
             let borrowed = component_reference.borrow_mut();
@@ -47,18 +53,16 @@ impl Entity {
             None
         }
     }
-    pub(crate) fn new() -> Self {
-        Entity {
-            components: Default::default(),
-        }
-    }
-    pub(crate) fn add_component<C: Component>(&mut self, component: C) {
-        if let Some(_value) = self.components
-            .insert(TypeId::of::<C>(), Rc::new(RefCell::new(component))) {
-            println!("Component Overwritten!");
-        }
-    }
+    /// Creates an `EntityBuilder` to construct an Entity.
     pub fn builder() -> EntityBuilder {
         EntityBuilder::new()
+    }
+    pub(crate) fn add_component<C: Component>(&mut self, component: C) {
+        if let Some(_value) = self
+            .components
+            .insert(TypeId::of::<C>(), Rc::new(RefCell::new(component)))
+        {
+            panic!("Attempted to Overwrite a Component with another of the same type.");
+        }
     }
 }

@@ -1,11 +1,13 @@
-mod component;
-mod entity;
-mod entity_builder;
-mod system;
-mod world;
+pub mod component;
+pub mod entity;
+pub mod entity_builder;
+pub mod system;
+pub mod world;
 
 use crate::component::Component;
 use daedelecs_core::Component;
+
+// TODO: Add a default Garbage Collection System.
 
 #[cfg(test)]
 mod tests {
@@ -73,32 +75,32 @@ mod tests {
     #[test]
     fn ecs_visual_test() {
         let mut world = World::new(());
-            
-        Entity::builder() 
-            .add(Name("foo".to_string()))
-            .add(Health(5))
+
+        Entity::builder()
+            .with(Name("foo".to_string()))
+            .with(Health(5))
             .add_to_world(&mut world);
         Entity::builder()
-            .add(Name("bar".to_string()))
-            .add(Health(10))
-            .add(Strength(1))
+            .with(Name("bar".to_string()))
+            .with(Health(10))
+            .with(Strength(1))
             .add_to_world(&mut world);
         Entity::builder()
-            .add(Name("qux".to_string()))
-            .add(Strength(3))
+            .with(Name("qux".to_string()))
+            .with(Strength(3))
             .add_to_world(&mut world);
         Entity::builder()
-            .add(WorldEntity{})
+            .with(WorldEntity {})
             .add_to_world(&mut world);
 
         world.register_system::<AddHealthSystem>();
         world.register_system::<SapStrengthSystem>();
-        
+
         assert!(!HashSet::from([TypeId::of::<Health>()]).contains(&TypeId::of::<Strength>()));
-        
+
         assert!(AddHealthSystem::entity_is_eligible(&world.entities[0].borrow(), &world));
         assert!(!SapStrengthSystem::entity_is_eligible(&world.entities[0].borrow(), &world));
-        
+
         world.run_system::<PrintSystem>();
         println!();
         world.run_system::<AddHealthSystem>();
@@ -107,19 +109,18 @@ mod tests {
         world.run_system::<SapStrengthSystem>();
         world.run_system::<PrintSystem>();
         world.run_system::<PrintWorldSystem>();
-        
-    } 
-    
+    }
+
     #[test]
     fn entity_eligibility_test() {
         let mut world = World::new(());
 
         Entity::builder()
-            .add(Health(5))
+            .with(Health(5))
             .add_to_world(&mut world);
         Entity::builder()
-            .add(Health(10))
-            .add(Strength(1))
+            .with(Health(10))
+            .with(Strength(1))
             .add_to_world(&mut world);
         // Entity::builder()
         //     .add(Name("qux".to_string()))
@@ -136,25 +137,24 @@ mod tests {
                    HashSet::from([TypeId::of::<Health>()]));
         assert_eq!(*world.systems_to_required_types_registry.get(&TypeId::of::<SapStrengthSystem>()).unwrap(),
                    HashSet::from([TypeId::of::<Strength>()]));
-        
+
         println!("{:?}", [TypeId::of::<Strength>(), TypeId::of::<Health>()]);
         println!("{:?}", world.entities[0].borrow().components.iter().map(|(type_id, _)| *type_id).collect::<Vec<TypeId>>());
         // println!("{:?}", AddHealthSystem::get_required_types());
-        
+
         assert_eq!(TypeId::of::<Strength>(), TypeId::of::<Strength>());
         assert_eq!(TypeId::of::<Health>(), TypeId::of::<Health>());
         assert_ne!(TypeId::of::<Strength>(), TypeId::of::<Health>());
-        
+
         assert_eq!(world.entities[0].borrow().components.contains_key(&TypeId::of::<Health>()), true);
         assert_eq!(world.entities[0].borrow().components.contains_key(&TypeId::of::<Strength>()), false);
-        
+
         let entity = world.entities[0].borrow();
 
         assert_eq!(entity.components.keys().map(|t| *t).collect::<Vec<TypeId>>(), vec![TypeId::of::<Health>()]);
 
         assert_eq!(AddHealthSystem::entity_is_eligible(&world.entities[0].borrow(), &world), true);
         assert_eq!(SapStrengthSystem::entity_is_eligible(&world.entities[0].borrow(), &world), false);
-        
     }
     #[test]
     fn sender_minimal_failing_test() {
@@ -175,7 +175,7 @@ mod tests {
             }
         }
         // Entity::builder().add(AnotherExampleComponent(1)).add_to_world(&mut world);
-        Entity::builder().add(ExampleComponent(2)).add_to_world(&mut world);
+        Entity::builder().with(ExampleComponent(2)).add_to_world(&mut world);
         // Entity::builder().add(ExampleComponent(3)).add(AnotherExampleComponent(4)).add_to_world(&mut world);
         Entity::builder().add_to_world(&mut world);
         world.run_system::<ExampleSystem>()
@@ -194,10 +194,9 @@ mod tests {
             }
         }
         let mut world = World::new(());
-        let mut entity = Entity::new();
-        entity.add_component(ExampleComponent {});
-        world.add_entity(entity);
-        world.register_system::<ExampleSystem>();
+        Entity::builder()
+            .with(ExampleComponent {})
+            .add_to_world(&mut world);
         world.run_system::<ExampleSystem>();
         assert!(world.systems_to_required_types_registry.contains_key(&TypeId::of::<ExampleSystem>()));
         assert!(world.systems_to_required_types_registry.get(&TypeId::of::<ExampleSystem>()).is_some());

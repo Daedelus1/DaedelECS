@@ -21,7 +21,7 @@ pub fn generate_component_tuple_impls(input: TokenStream) -> TokenStream {
             1 => {
                 let param = &type_params[0];
                 quote! { #param }
-            },
+            }
             _ => quote! { (#(#type_params),*) }
         };
 

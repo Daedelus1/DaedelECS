@@ -2,23 +2,26 @@ use crate::component::Component;
 use crate::entity::Entity;
 use crate::world::World;
 
-#[allow(dead_code)]
-pub(crate) struct EntityBuilder {
-    entity: Entity
+pub struct EntityBuilder {
+    entity: Entity,
 }
-#[allow(dead_code)]
 impl EntityBuilder {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         EntityBuilder {
             entity: Entity {
-                components: Default::default()
-            }
+                components: Default::default(),
+            },
         }
     }
-    pub fn add<C: Component>(mut self, component:C) -> Self{
+    /// Attaches a component to the entity being built.
+    /// Will panic if the component already exists for the entity
+    pub fn with<C: Component>(mut self, component: C) -> Self {
         self.entity.add_component(component);
         self
     }
+    /// Attaches the entity to the ECS System.
+    /// Unlike other ECS's, there is no built-in means of identification,
+    /// so you cannot address the entity individually without a unique component. 
     pub fn add_to_world<State>(self, world: &mut World<State>) {
         world.add_entity(self.entity);
     }

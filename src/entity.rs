@@ -8,9 +8,15 @@ use std::rc::Rc;
 
 pub struct Entity {
     pub(crate) components: HashMap<TypeId, Rc<RefCell<dyn Component>>>,
+    pub(crate) identifier: usize
 }
 
 impl Entity {
+
+    /// Creates an `EntityBuilder` to construct an Entity.
+    pub fn builder() -> EntityBuilder {
+        EntityBuilder::new()
+    }
     /// Attempts to get a reference to a component of a specified type from an entity.
     /// Will Return `None` if no such component is associated with the entity.
     /// Will Return `Some(&Entity)` if it does exist.
@@ -53,10 +59,6 @@ impl Entity {
             None
         }
     }
-    /// Creates an `EntityBuilder` to construct an Entity.
-    pub fn builder() -> EntityBuilder {
-        EntityBuilder::new()
-    }
     pub(crate) fn add_component<C: Component>(&mut self, component: C) {
         if let Some(_value) = self
             .components
@@ -64,5 +66,10 @@ impl Entity {
         {
             panic!("Attempted to Overwrite a Component with another of the same type.");
         }
+    }
+}
+impl PartialEq for Entity {
+    fn eq(&self, other: &Self) -> bool {
+        self.identifier == other.identifier
     }
 }

@@ -3,13 +3,15 @@
 
 # What is DaedelECS?
 
-DaedelECS is a lightweight, bare-bones, extensible Entity Component System implementation written entirely in Safe Rust.
+DaedelECS is a lightweight, bare-bones, extensible Entity Component System implementation written entirely in Rust.
 It is published under the MIT License.
 It is still under active development, so expect frequent breaking changes.
 
 # Important Notes
 
-It is entirely written in safe rust, and the only dependencies are `quote` and `syn`, both battle-tested pieces of
+Asserting that The Standard Library, `quote` and `syn` are all safe packages, This program is entirely memory Safe.
+It is not possible to generate reference cycles in this program during normal use.
+There are no novel `unsafe` blocks, and the only dependencies are `quote` and `syn`, both battle-tested pieces of
 software, with over $600$ million and $900$ million downloads respectively. If there is a memory error, It is not
 from this crate. This library is expecting an up-to-date Rust version, using the 2024 edition or later.
 

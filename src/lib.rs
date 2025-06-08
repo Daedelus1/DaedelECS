@@ -7,7 +7,6 @@ pub mod world;
 use crate::component::Component;
 use daedelecs_core::Component;
 
-// TODO: Add a default Garbage Collection System.
 
 #[cfg(test)]
 mod tests {
@@ -98,8 +97,8 @@ mod tests {
 
         assert!(!HashSet::from([TypeId::of::<Health>()]).contains(&TypeId::of::<Strength>()));
 
-        assert!(AddHealthSystem::entity_is_eligible(&world.entities[0].borrow(), &world));
-        assert!(!SapStrengthSystem::entity_is_eligible(&world.entities[0].borrow(), &world));
+        assert!(AddHealthSystem::entity_is_eligible(&world.entities.values().find(|_| true).unwrap().borrow(), &world));
+        assert!(!SapStrengthSystem::entity_is_eligible(&world.entities.values().find(|_|true).unwrap().borrow(), &world));
 
         world.run_system::<PrintSystem>();
         println!();
@@ -138,23 +137,23 @@ mod tests {
         assert_eq!(*world.systems_to_required_types_registry.get(&TypeId::of::<SapStrengthSystem>()).unwrap(),
                    HashSet::from([TypeId::of::<Strength>()]));
 
-        println!("{:?}", [TypeId::of::<Strength>(), TypeId::of::<Health>()]);
-        println!("{:?}", world.entities[0].borrow().components.iter().map(|(type_id, _)| *type_id).collect::<Vec<TypeId>>());
+        // println!("{:?}", [TypeId::of::<Strength>(), TypeId::of::<Health>()]);
+        // println!("{:?}", world.entities.values().find(|_|true).unwrap().borrow().components.iter().map(|(type_id, _)| *type_id).collect::<Vec<TypeId>>());
         // println!("{:?}", AddHealthSystem::get_required_types());
 
         assert_eq!(TypeId::of::<Strength>(), TypeId::of::<Strength>());
         assert_eq!(TypeId::of::<Health>(), TypeId::of::<Health>());
         assert_ne!(TypeId::of::<Strength>(), TypeId::of::<Health>());
 
-        assert_eq!(world.entities[0].borrow().components.contains_key(&TypeId::of::<Health>()), true);
-        assert_eq!(world.entities[0].borrow().components.contains_key(&TypeId::of::<Strength>()), false);
-
-        let entity = world.entities[0].borrow();
+        assert_eq!(world.entities.values().find(|_|true).unwrap().borrow().components.contains_key(&TypeId::of::<Health>()), true);
+        assert_eq!(world.entities.values().find(|_|true).unwrap().borrow().components.contains_key(&TypeId::of::<Strength>()), false);
+        //
+        let entity = world.entities.values().find(|_|true).unwrap().borrow();
 
         assert_eq!(entity.components.keys().map(|t| *t).collect::<Vec<TypeId>>(), vec![TypeId::of::<Health>()]);
 
-        assert_eq!(AddHealthSystem::entity_is_eligible(&world.entities[0].borrow(), &world), true);
-        assert_eq!(SapStrengthSystem::entity_is_eligible(&world.entities[0].borrow(), &world), false);
+        assert_eq!(AddHealthSystem::entity_is_eligible(&world.entities.values().find(|_|true).unwrap().borrow(), &world), true);
+        assert_eq!(SapStrengthSystem::entity_is_eligible(&world.entities.values().find(|_|true).unwrap().borrow(), &world), false);
     }
     #[test]
     fn sender_minimal_failing_test() {

@@ -1,5 +1,5 @@
 use crate::entity::Entity;
-use crate::system::System;
+use crate::system::{System, SystemInfo};
 use std::any::TypeId;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};

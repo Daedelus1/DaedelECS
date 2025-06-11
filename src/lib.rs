@@ -10,7 +10,8 @@ use daedelecs_core::Component;
 
 #[cfg(test)]
 mod tests {
-    use crate::component::Component;
+    use crate::system::SystemInfo;
+use crate::component::Component;
     use crate::entity::Entity;
     use crate::system::System;
     use crate::world::World;

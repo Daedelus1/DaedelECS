@@ -2,6 +2,7 @@ use crate::component::Component;
 use crate::entity::Entity;
 use crate::world::World;
 
+/// Builder Pattern for the Entity Struct.
 pub struct EntityBuilder {
     entity: Entity,
 }
